@@ -1,1 +1,176 @@
 
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SIYAM AI</title>
+<style>
+*{box-sizing:border-box}
+body{
+margin:0;padding:20px;min-height:100vh;
+display:flex;align-items:center;justify-content:center;
+font-family:Arial,sans-serif;
+background:linear-gradient(135deg,#061a3a,#0878d9);
+color:#17345c
+}
+.app{
+width:100%;max-width:430px;background:white;
+padding:22px;border-radius:24px;
+box-shadow:0 15px 45px #00152d66
+}
+.logo{
+width:75px;height:75px;border-radius:50%;
+margin:auto;display:grid;place-items:center;
+background:linear-gradient(135deg,#168cff,#063c91);
+color:white;font-size:28px;font-weight:bold
+}
+h1{text-align:center;margin-bottom:5px}
+.sub{text-align:center;color:#71839b}
+#chat{
+height:280px;overflow-y:auto;
+background:#f0f6ff;padding:12px;
+border-radius:15px;margin:20px 0
+}
+.message{
+padding:11px 13px;border-radius:13px;
+margin:9px 0;line-height:1.5;
+overflow-wrap:anywhere
+}
+.user{background:#d5eaff;margin-left:25px}
+.ai{background:white;margin-right:25px}
+textarea{
+width:100%;height:65px;padding:12px;
+border:1px solid #c8d9ee;border-radius:12px;
+font-size:16px
+}
+button{
+border:0;border-radius:12px;padding:13px;
+font-size:15px;font-weight:bold;color:white;
+background:#0877df;cursor:pointer
+}
+.send{width:100%;margin-top:9px}
+.controls{
+display:grid;grid-template-columns:1fr 1fr;
+gap:9px;margin-top:10px
+}
+.mic{background:#0b9b79}
+.stop{background:#64748b}
+#status{text-align:center;color:#71839b;font-size:13px}
+</style>
+</head>
+<body>
+<main class="app">
+<div class="logo">AI</div>
+<h1>SIYAM AI</h1>
+<p class="sub">Your Personal Assistant</p>
+
+<div id="chat" aria-live="polite">
+<div class="message ai">
+হ্যালো সিয়াম! আমি SIYAM AI।
+বাংলা অথবা ইংরেজিতে কথা বলো।
+</div>
+</div>
+
+<textarea id="message" placeholder="এখানে লিখো..."></textarea>
+<button class="send" onclick="sendMessage()">Send Message</button>
+
+<div class="controls">
+<button class="mic" onclick="startListening()">🎤 Speak</button>
+<button class="stop" onclick="stopSpeaking()">🔇 Stop Voice</button>
+</div>
+<p id="status">Ready</p>
+</main>
+
+<script>
+const chat=document.getElementById("chat");
+const input=document.getElementById("message");
+const statusText=document.getElementById("status");
+
+function addMessage(text,who){
+const item=document.createElement("div");
+item.className="message "+who;
+item.textContent=text;
+chat.appendChild(item);
+chat.scrollTop=chat.scrollHeight;
+}
+
+function getReply(text){
+const t=text.toLowerCase();
+
+if(t.includes("hello")||t.includes("hi")||
+t.includes("হ্যালো")||t.includes("হাই")){
+return "Hello Siyam! কেমন আছো?";
+}
+if(t.includes("তোমার নাম")||t.includes("your name")){
+return "আমার নাম SIYAM AI Personal Assistant।";
+}
+if(t.includes("চার্জ")||t.includes("battery")){
+return "ব্যাটারির তথ্য দেখার সুবিধা পরবর্তী Android সংস্করণে যুক্ত করা হবে।";
+}
+return "তোমার কথা পেয়েছি। এটি এখন Demo Version। আসল AI সংযোগ পরবর্তী ধাপে হবে।";
+}
+
+function speak(text){
+if(!("speechSynthesis" in window))return;
+speechSynthesis.cancel();
+
+const isEnglish=/^[a-z0-9\s.,!?'-]+$/i.test(text);
+const utterance=new SpeechSynthesisUtterance(text);
+utterance.lang=isEnglish?"en-US":"bn-BD";
+utterance.rate=0.95;
+
+const voices=speechSynthesis.getVoices();
+const voice=voices.find(v=>
+v.lang.toLowerCase().startsWith(isEnglish?"en":"bn")
+);
+if(voice)utterance.voice=voice;
+speechSynthesis.speak(utterance);
+}
+
+function sendMessage(){
+const text=input.value.trim();
+if(!text)return;
+addMessage(text,"user");
+input.value="";
+const reply=getReply(text);
+addMessage(reply,"ai");
+speak(reply);
+statusText.textContent="Demo response";
+}
+
+const SpeechRecognition=
+window.SpeechRecognition||window.webkitSpeechRecognition;
+let recognition;
+
+function startListening(){
+if(!SpeechRecognition){
+statusText.textContent="Voice input supported নয়";
+return;
+}
+recognition=new SpeechRecognition();
+recognition.lang="bn-BD";
+recognition.interimResults=false;
+
+recognition.onstart=()=>{
+statusText.textContent="শুনছি... এখন কথা বলো";
+};
+recognition.onresult=(event)=>{
+input.value=event.results[0][0].transcript;
+statusText.textContent="কথা লেখা হয়েছে। Send চাপো।";
+};
+recognition.onerror=()=>{
+statusText.textContent="Microphone permission পরীক্ষা করো";
+};
+recognition.start();
+}
+
+function stopSpeaking(){
+if("speechSynthesis" in window)speechSynthesis.cancel();
+if(recognition)recognition.stop();
+statusText.textContent="Voice stopped";
+}
+</script>
+</body>
+</html>
+
