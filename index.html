@@ -1,64 +1,66 @@
+
 <!DOCTYPE html>
 <html lang="bn">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SIYAM AI</title>
+<title>SIYAM AI - Personal Assistant</title>
 
 <style>
 *{box-sizing:border-box}
 body{
-margin:0;padding:20px;min-height:100vh;
-display:flex;align-items:center;justify-content:center;
-font-family:Arial,sans-serif;
-background:linear-gradient(135deg,#061a3a,#0878d9);
-color:#17345c
+  margin:0;padding:16px;min-height:100vh;
+  display:flex;align-items:center;justify-content:center;
+  font-family:Arial,sans-serif;
+  background:linear-gradient(135deg,#061a3a,#0878d9);
+  color:#17345c
 }
 .app{
-width:100%;max-width:430px;background:white;
-padding:22px;border-radius:24px;
-box-shadow:0 15px 45px #00152d66
+  width:100%;max-width:430px;background:white;
+  padding:20px;border-radius:24px;
+  box-shadow:0 15px 45px #00152d66
 }
 .logo{
-width:75px;height:75px;border-radius:50%;
-margin:auto;display:grid;place-items:center;
-background:linear-gradient(135deg,#168cff,#063c91);
-color:white;font-size:28px;font-weight:bold
+  width:75px;height:75px;border-radius:50%;
+  margin:auto;display:grid;place-items:center;
+  background:linear-gradient(135deg,#168cff,#063c91);
+  color:white;font-size:28px;font-weight:bold
 }
 h1{text-align:center;margin-bottom:5px}
 .sub{text-align:center;color:#71839b}
 input,textarea{
-width:100%;padding:13px;margin:7px 0;
-border:1px solid #c8d9ee;border-radius:12px;
-font-size:16px
+  width:100%;padding:13px;margin:7px 0;
+  border:1px solid #c8d9ee;border-radius:12px;
+  font-size:16px
 }
-textarea{height:65px}
+textarea{height:75px;resize:vertical}
 button{
-width:100%;border:0;border-radius:12px;
-padding:13px;margin-top:9px;
-font-size:15px;font-weight:bold;color:white;
-background:#0877df;cursor:pointer
+  width:100%;border:0;border-radius:12px;
+  padding:13px;margin-top:9px;
+  font-size:15px;font-weight:bold;color:white;
+  background:#0877df;cursor:pointer
 }
+button:disabled{opacity:.6;cursor:not-allowed}
 .google{background:#34445c}
 .secondary{background:#0b9b79}
+.stop{background:#64748b}
 #chat{
-height:280px;overflow-y:auto;
-background:#f0f6ff;padding:12px;
-border-radius:15px;margin:20px 0
+  height:300px;overflow-y:auto;
+  background:#f0f6ff;padding:12px;
+  border-radius:15px;margin:18px 0
 }
 .message{
-padding:11px 13px;border-radius:13px;
-margin:9px 0;line-height:1.5;
-overflow-wrap:anywhere
+  padding:11px 13px;border-radius:13px;
+  margin:9px 0;line-height:1.5;
+  overflow-wrap:anywhere;white-space:pre-wrap
 }
 .user{background:#d5eaff;margin-left:25px}
 .ai{background:white;margin-right:25px}
 .controls{
-display:grid;grid-template-columns:1fr 1fr;
-gap:9px;margin-top:10px
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:9px;margin-top:10px
 }
 .controls button{margin:0}
-.stop{background:#64748b}
 #status{text-align:center;color:#71839b;font-size:13px}
 #chatArea{display:none}
 #authArea{display:block}
@@ -68,82 +70,96 @@ gap:9px;margin-top:10px
 
 <body>
 <main class="app">
+  <div class="logo">AI</div>
+  <h1>SIYAM AI</h1>
+  <p class="sub">Your Personal Assistant</p>
 
-<div class="logo">AI</div>
-<h1>SIYAM AI</h1>
-<p class="sub">Your Personal Assistant</p>
+  <section id="authArea">
+    <h3>Login / Create Account</h3>
 
-<section id="authArea">
-<h3>Login / Create Account</h3>
+    <input id="email" type="email"
+      placeholder="তোমার Email লিখো"
+      autocomplete="email">
 
-<input id="email" type="email"
-placeholder="তোমার Email লিখো">
+    <input id="password" type="password"
+      placeholder="Password লিখো"
+      autocomplete="current-password">
 
-<input id="password" type="password"
-placeholder="Password লিখো">
+    <button onclick="registerUser()">Create Account</button>
+    <button onclick="loginUser()">Login</button>
 
-<button onclick="registerUser()">Create Account</button>
-<button onclick="loginUser()">Login</button>
-<button class="google" onclick="googleLogin()">
-Continue with Google
-</button>
+    <button class="google" onclick="googleLogin()">
+      Continue with Google
+    </button>
 
-<p class="small" id="authStatus">
-Firebase Authentication
-</p>
-</section>
+    <p class="small" id="authStatus">
+      Firebase Authentication
+    </p>
+  </section>
 
-<section id="chatArea">
+  <section id="chatArea">
+    <p class="small" id="userInfo"></p>
+    <button class="stop" onclick="logoutUser()">Logout</button>
 
-<p class="small" id="userInfo"></p>
-<button class="stop" onclick="logoutUser()">Logout</button>
+    <div id="chat" aria-live="polite">
+      <div class="message ai">
+        হ্যালো! আমি SIYAM AI।
+        বাংলা অথবা ইংরেজিতে আমাকে প্রশ্ন করতে পারো।
+      </div>
+    </div>
 
-<div id="chat" aria-live="polite">
-<div class="message ai">
-হ্যালো সিয়াম! আমি SIYAM AI।
-বাংলা অথবা ইংরেজিতে কথা বলো।
-</div>
-</div>
+    <textarea id="message"
+      maxlength="4000"
+      placeholder="এখানে লিখো..."></textarea>
 
-<textarea id="message"
-placeholder="এখানে লিখো..."></textarea>
+    <button id="sendBtn" onclick="sendMessage()">
+      Send Message
+    </button>
 
-<button onclick="sendMessage()">Send Message</button>
+    <div class="controls">
+      <button class="secondary" onclick="startListening()">
+        🎤 Speak
+      </button>
+      <button class="stop" onclick="stopSpeaking()">
+        🔇 Stop Voice
+      </button>
+    </div>
+  </section>
 
-<div class="controls">
-<button class="secondary" onclick="startListening()">🎤 Speak</button>
-<button class="stop" onclick="stopSpeaking()">🔇 Stop Voice</button>
-</div>
-
-</section>
-
-<p id="status">Ready</p>
+  <p id="status">Ready</p>
 </main>
 
 <script type="module">
-
 import { initializeApp }
 from "https://www.gstatic.com/firebasejs/13.4.0/firebase-app.js";
 
 import {
-getAuth,
-createUserWithEmailAndPassword,
-signInWithEmailAndPassword,
-GoogleAuthProvider,
-signInWithPopup,
-onAuthStateChanged,
-signOut
+  getAuth,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  GoogleAuthProvider,
+  signInWithPopup,
+  onAuthStateChanged,
+  signOut
 }
 from "https://www.gstatic.com/firebasejs/13.4.0/firebase-auth.js";
 
+import {
+  getAI,
+  getGenerativeModel,
+  GoogleAIBackend
+}
+from "https://www.gstatic.com/firebasejs/13.4.0/firebase-ai.js";
+
+// Firebase configuration
 const firebaseConfig = {
-apiKey: "AIzaSyDfQiByWeYH8nGoFdVIkpeaOD3DMYKE6SY",
-authDomain: "siyam-ai-dfa17.firebaseapp.com",
-projectId: "siyam-ai-dfa17",
-storageBucket: "siyam-ai-dfa17.firebasestorage.app",
-messagingSenderId: "860604202308",
-appId: "1:860604202308:web:317e6e73257b9933806b11",
-measurementId: "G-DL0RMGY75Y"
+  apiKey: "AIzaSyDfQiByWeYH8nGoFdVIkpeaOD3DMYKE6SY",
+  authDomain: "siyam-ai-dfa17.firebaseapp.com",
+  projectId: "siyam-ai-dfa17",
+  storageBucket: "siyam-ai-dfa17.firebasestorage.app",
+  messagingSenderId: "860604202308",
+  appId: "1:860604202308:web:317e6e73257b9933806b11",
+  measurementId: "G-DL0RMGY75Y"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -152,162 +168,271 @@ const auth = getAuth(app);
 const authArea = document.getElementById("authArea");
 const chatArea = document.getElementById("chatArea");
 const authStatus = document.getElementById("authStatus");
-
-window.registerUser = async function(){
-const email = document.getElementById("email").value.trim();
-const password = document.getElementById("password").value;
-
-try{
-await createUserWithEmailAndPassword(auth,email,password);
-authStatus.textContent = "Account তৈরি হয়েছে!";
-}catch(error){
-authStatus.textContent = error.message;
-}
-};
-
-window.loginUser = async function(){
-const email = document.getElementById("email").value.trim();
-const password = document.getElementById("password").value;
-
-try{
-await signInWithEmailAndPassword(auth,email,password);
-authStatus.textContent = "Login সফল!";
-}catch(error){
-authStatus.textContent = error.message;
-}
-};
-
-window.googleLogin = async function(){
-try{
-const provider = new GoogleAuthProvider();
-await signInWithPopup(auth,provider);
-}catch(error){
-authStatus.textContent = error.message;
-}
-};
-
-window.logoutUser = async function(){
-try{
-await signOut(auth);
-}catch(error){
-document.getElementById("status").textContent = error.message;
-}
-};
-
-onAuthStateChanged(auth,user=>{
-if(user){
-authArea.style.display="none";
-chatArea.style.display="block";
-document.getElementById("userInfo").textContent =
-"Logged in: "+user.email;
-}else{
-authArea.style.display="block";
-chatArea.style.display="none";
-}
-});
-
+const statusText = document.getElementById("status");
 const chat = document.getElementById("chat");
 const input = document.getElementById("message");
-const statusText = document.getElementById("status");
+const sendBtn = document.getElementById("sendBtn");
 
-function addMessage(text,who){
-const item=document.createElement("div");
-item.className="message "+who;
-item.textContent=text;
-chat.appendChild(item);
-chat.scrollTop=chat.scrollHeight;
+// Firebase AI Logic
+let aiModel = null;
+
+try {
+  const ai = getAI(app, {
+    backend: new GoogleAIBackend()
+  });
+
+  aiModel = getGenerativeModel(ai, {
+    model: "gemini-4-hydrogen"
+  });
+} catch (error) {
+  console.error("AI initialization error:", error);
 }
 
-function getReply(text){
-const t=text.toLowerCase();
+// Account creation
+window.registerUser = async function() {
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value;
 
-if(t.includes("hello")||t.includes("hi")||
-t.includes("হ্যালো")||t.includes("হাই")){
-return "Hello Siyam! কেমন আছো?";
-}
+  if (!email || !password) {
+    authStatus.textContent = "Email এবং Password লিখো।";
+    return;
+  }
 
-if(t.includes("তোমার নাম")||t.includes("your name")){
-return "আমার নাম SIYAM AI Personal Assistant।";
-}
-
-if(t.includes("চার্জ")||t.includes("battery")){
-return "ব্যাটারির তথ্য দেখার সুবিধা পরবর্তী Android সংস্করণে যুক্ত করা হবে।";
-}
-
-return "তোমার কথা পেয়েছি। এটি এখন Demo Version। আসল AI সংযোগ পরবর্তী ধাপে হবে।";
-}
-
-function speak(text){
-if(!("speechSynthesis" in window))return;
-
-speechSynthesis.cancel();
-
-const isEnglish=/^[a-z0-9\s.,!?'-]+$/i.test(text);
-const utterance=new SpeechSynthesisUtterance(text);
-utterance.lang=isEnglish?"en-US":"bn-BD";
-utterance.rate=0.95;
-
-const voices=speechSynthesis.getVoices();
-const voice=voices.find(v=>
-v.lang.toLowerCase().startsWith(isEnglish?"en":"bn")
-);
-
-if(voice)utterance.voice=voice;
-speechSynthesis.speak(utterance);
-}
-
-window.sendMessage=function(){
-const text=input.value.trim();
-if(!text)return;
-
-addMessage(text,"user");
-input.value="";
-
-const reply=getReply(text);
-addMessage(reply,"ai");
-speak(reply);
-statusText.textContent="Demo response";
+  try {
+    await createUserWithEmailAndPassword(auth, email, password);
+    authStatus.textContent = "Account তৈরি হয়েছে!";
+  } catch (error) {
+    authStatus.textContent = error.message;
+  }
 };
 
+// Login
+window.loginUser = async function() {
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value;
+
+  if (!email || !password) {
+    authStatus.textContent = "Email এবং Password লিখো।";
+    return;
+  }
+
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+    authStatus.textContent = "Login সফল!";
+  } catch (error) {
+    authStatus.textContent = error.message;
+  }
+};
+
+// Google Login
+window.googleLogin = async function() {
+  try {
+    const provider = new GoogleAuthProvider();
+    await signInWithPopup(auth, provider);
+  } catch (error) {
+    authStatus.textContent = error.message;
+  }
+};
+
+// Logout
+window.logoutUser = async function() {
+  try {
+    stopSpeaking();
+    await signOut(auth);
+  } catch (error) {
+    statusText.textContent = error.message;
+  }
+};
+
+// Authentication state
+onAuthStateChanged(auth, user => {
+  if (user) {
+    authArea.style.display = "none";
+    chatArea.style.display = "block";
+    document.getElementById("userInfo").textContent =
+      "Logged in: " + (user.email || "Google User");
+  } else {
+    authArea.style.display = "block";
+    chatArea.style.display = "none";
+  }
+});
+
+// Chat history for the current page session
+const conversationHistory = [];
+
+function addMessage(text, who) {
+  const item = document.createElement("div");
+  item.className = "message " + who;
+  item.textContent = text;
+  chat.appendChild(item);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+// Real AI response
+async function getAIReply(userText) {
+  if (!aiModel) {
+    throw new Error(
+      "AI চালু হয়নি। Firebase AI Logic সেটআপ পরীক্ষা করো।"
+    );
+  }
+
+  const recentHistory = conversationHistory
+    .slice(-10)
+    .map(item =>
+      (item.role === "user" ? "User: " : "SIYAM AI: ") + item.text
+    )
+    .join("\n");
+
+  const prompt = `
+তোমার নাম SIYAM AI।
+তুমি একজন সহায়ক Personal Assistant।
+বাংলা ও ইংরেজি দুই ভাষায় উত্তর দেবে।
+ব্যবহারকারী যে ভাষায় প্রশ্ন করবে, সেই ভাষায় উত্তর দেবে।
+সহজ, পরিষ্কার ও ভদ্রভাবে উত্তর দেবে।
+তুমি ফোনে কোনো কাজ নিজে করতে পারো না, তাই এমন দাবি করবে না।
+নিরাপত্তা ও গোপনীয়তা বজায় রাখবে।
+
+আগের কথোপকথন:
+${recentHistory}
+
+ব্যবহারকারীর নতুন প্রশ্ন:
+${userText}
+`;
+
+  const result = await aiModel.generateContent(prompt);
+  const responseText = result.response.text();
+
+  if (!responseText) {
+    throw new Error("AI থেকে কোনো উত্তর পাওয়া যায়নি।");
+  }
+
+  return responseText;
+}
+
+// Send message
+window.sendMessage = async function() {
+  const text = input.value.trim();
+
+  if (!text || sendBtn.disabled) return;
+
+  if (!auth.currentUser) {
+    statusText.textContent = "আগে Login করো।";
+    return;
+  }
+
+  if (text.length > 4000) {
+    statusText.textContent = "মেসেজটি অনেক বড়।";
+    return;
+  }
+
+  addMessage(text, "user");
+  conversationHistory.push({ role: "user", text });
+
+  input.value = "";
+  sendBtn.disabled = true;
+  sendBtn.textContent = "AI উত্তর দিচ্ছে...";
+  statusText.textContent = "SIYAM AI ভাবছে...";
+
+  try {
+    const reply = await getAIReply(text);
+
+    addMessage(reply, "ai");
+    conversationHistory.push({ role: "ai", text: reply });
+
+    speak(reply);
+    statusText.textContent = "AI response received";
+  } catch (error) {
+    console.error(error);
+
+    const message =
+      "দুঃখিত, AI সংযোগে সমস্যা হয়েছে। Firebase AI Logic চালু আছে কি না এবং ইন্টারনেট সংযোগ পরীক্ষা করো।";
+
+    addMessage(message, "ai");
+    statusText.textContent = error.message || "AI connection error";
+  } finally {
+    sendBtn.disabled = false;
+    sendBtn.textContent = "Send Message";
+  }
+};
+
+// Voice output
+function speak(text) {
+  if (!("speechSynthesis" in window)) return;
+
+  speechSynthesis.cancel();
+
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = /[\u0980-\u09FF]/.test(text)
+    ? "bn-BD"
+    : "en-US";
+
+  utterance.rate = 0.95;
+  speechSynthesis.speak(utterance);
+}
+
+// Voice input
 const SpeechRecognition =
-window.SpeechRecognition||window.webkitSpeechRecognition;
+  window.SpeechRecognition ||
+  window.webkitSpeechRecognition;
 
-let recognition;
+let recognition = null;
 
-window.startListening=function(){
-if(!SpeechRecognition){
-statusText.textContent="Voice input supported নয়";
-return;
-}
+window.startListening = function() {
+  if (!SpeechRecognition) {
+    statusText.textContent =
+      "এই Browser-এ Voice input supported নয়।";
+    return;
+  }
 
-recognition=new SpeechRecognition();
-recognition.lang="bn-BD";
-recognition.interimResults=false;
+  recognition = new SpeechRecognition();
+  recognition.lang = "bn-BD";
+  recognition.interimResults = false;
+  recognition.continuous = false;
 
-recognition.onstart=()=>{
-statusText.textContent="শুনছি... এখন কথা বলো";
+  recognition.onstart = () => {
+    statusText.textContent = "শুনছি... এখন কথা বলো।";
+  };
+
+  recognition.onresult = event => {
+    input.value = event.results[0][0].transcript;
+    statusText.textContent =
+      "কথা লেখা হয়েছে। Send চাপো।";
+  };
+
+  recognition.onerror = event => {
+    statusText.textContent =
+      "Voice error: " + event.error;
+  };
+
+  recognition.onend = () => {
+    if (statusText.textContent.includes("শুনছি")) {
+      statusText.textContent = "Voice input বন্ধ হয়েছে।";
+    }
+  };
+
+  recognition.start();
 };
 
-recognition.onresult=(event)=>{
-input.value=event.results[0][0].transcript;
-statusText.textContent="কথা লেখা হয়েছে। Send চাপো।";
+// Stop voice
+window.stopSpeaking = function() {
+  if ("speechSynthesis" in window) {
+    speechSynthesis.cancel();
+  }
+
+  if (recognition) {
+    recognition.stop();
+  }
+
+  statusText.textContent = "Voice stopped";
 };
 
-recognition.onerror=()=>{
-statusText.textContent="Microphone permission পরীক্ষা করো";
-};
-
-recognition.start();
-};
-
-window.stopSpeaking=function(){
-if("speechSynthesis" in window)
-speechSynthesis.cancel();
-
-if(recognition)recognition.stop();
-statusText.textContent="Voice stopped";
-};
-
+// Ctrl + Enter to send
+input.addEventListener("keydown", event => {
+  if (event.key === "Enter" && event.ctrlKey) {
+    event.preventDefault();
+    window.sendMessage();
+  }
+});
 </script>
 </body>
 </html>
